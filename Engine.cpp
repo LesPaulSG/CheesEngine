@@ -25,10 +25,28 @@ void ChessEngine::CheckVictory(){
 }
 
 void ChessEngine::draw(){
+	int x, y;
+	char s;
+	for (int i = 0; i < white.GetNumOfPieces(); ++i) {
+		x = white.GetPieces()->at(i)->GetPos().x;
+		y = white.GetPieces()->at(i)->GetPos().y;
+		s = white.GetPieces()->at(i)->GetSymbol();
+		board[x][y] = white.GetPieces()->at(i);
+	}
+
+	for (int i = 0; i < black.GetNumOfPieces(); ++i) {
+		x = black.GetPieces()->at(i)->GetPos().x;
+		y = black.GetPieces()->at(i)->GetPos().y;
+		s = black.GetPieces()->at(i)->GetSymbol();
+		board[x][y] = black.GetPieces()->at(i);
+	}
 	for (int i = 0; i < 8; ++i) {
 		for (int j = 0; j < 8; ++j) {
 			if (board[i][j] == nullptr) {
 				std::cout << 'x';
+			}
+			else {
+				std::cout << board[i][j]->GetSymbol();
 			}
 		}
 		std::cout << std::endl;
@@ -77,7 +95,7 @@ void ChessEngine::Load(std::string fileName){// = "satrtState.txt"){
 
 void ChessEngine::Save(std::string fileName){
 	std::cout << "save" << std::endl;
-	std::fstream fout("quickSave.txt", std::ios::out);
+	std::ofstream fout("quickSave.txt", std::ios::out);
 	//fout.open("maybe.txt", std::ios_base::out);
 	if (!fout.is_open()) {
 		std::cout << "not open" << std::endl;
