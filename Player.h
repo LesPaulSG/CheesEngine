@@ -10,5 +10,7 @@ private:
 
 public:
 	Player(bool isWhite);
-	void AddPiece(Piece* piece);
+	void AddPiece(char type, int x, int y);
+	const std::vector<Piece*>* GetPieces();
+	const int GetNumOfPieces() const;
 };

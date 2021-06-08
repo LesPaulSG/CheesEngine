@@ -2,7 +2,7 @@
 
 #include "Utilities.h"
 
-enum class fType { PAWN, BSHP, KNHT, ROOK, QUEN, KING, DFLT };
+enum class fType { PAWN = 112, BSHP = 98, KNHT = 107, ROOK = 114, QUEN = 113, KING = 75, DFLT = 0 };
 
 enum class Move { CAN, NOT, KIL };
 
@@ -15,47 +15,65 @@ public:
 
 	Piece(int x, int y, bool white);
 	virtual void GenerateMoves() = 0;
-	virtual ~Piece() = 0;
+	virtual ~Piece() = default;
+
+//public:
+	char GetSymbol();
+	Cell GetPos();
+	
+	const std::vector<Cell>* GetAvaliableMoves();
 };
 
-class Pawn : private Piece {
+class Pawn : public Piece {
 private:
 	//fType Piece::type = PAWN;
+
+public:
 	void GenerateMoves() override;
 	Pawn(int x, int y, bool white);
 };
 
-class Bishop : private Piece {
+class Bishop : public Piece {
 private:
 	//fType Piece::type = BSHP;
+
+public:
 	void GenerateMoves() override;
 	Bishop(int x, int y, bool white);
 };
 
-class Knight : private Piece {
+class Knight : public Piece {
 private:
 	//fType Piece::type = KNHT;
+
+public:
 	void GenerateMoves() override;
 	Knight(int x, int y, bool white);
 };
 
-class Rook : private Piece {
+class Rook : public Piece {
 private:
 	//fType Piece::type = ROOK;
+
+public:
 	void GenerateMoves() override;
 	Rook(int x, int y, bool white);
 };
 
-class Queen : private Piece {
+class Queen : public Piece {
 private:
 	//fType Piece::type = QUEN;
+
+public:
 	void GenerateMoves() override;
 	Queen(int x, int y, bool white);
 };
 
-class King : private Piece {
+class King : public Piece {
 private:
 	//fType Piece::type = KING;
+
+public:
 	void GenerateMoves() override;
 	King(int x, int y, bool white);
 };

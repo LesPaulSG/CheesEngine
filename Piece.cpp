@@ -1,7 +1,22 @@
 #include "Piece.h"
 
-Piece::Piece(int x, int y, bool white) : pos(x, y), white(white), type(fType::DFLT) {
+Piece::Piece(int x, int y, bool white) : 
+	pos(x, y), 
+	white(white), 
+	type(fType::DFLT) {
 	
+}
+
+char Piece::GetSymbol(){
+	return char(type);
+}
+
+Cell Piece::GetPos(){
+	return pos;
+}
+
+const std::vector<Cell>* Piece::GetAvaliableMoves(){
+	return &avaliableMoves;
 }
 
 void Pawn::GenerateMoves(){
@@ -10,6 +25,7 @@ void Pawn::GenerateMoves(){
 
 Pawn::Pawn(int x, int y, bool white) : Piece(x, y, white) {
 	Piece::type = fType::PAWN;
+	
 }
 
 void Bishop::GenerateMoves(){
