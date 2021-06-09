@@ -2,7 +2,10 @@
 
 #include "Engine.h"
 
-ChessEngine::ChessEngine() : white(true), black(false) {
+ChessEngine::ChessEngine() : 
+	white(true), 
+	black(false),
+	activePiece(nullptr) {
 	Load();
 	for (int i = 0; i < 8; ++i) {
 		for (int j = 0; j < 8; ++j) {
@@ -10,6 +13,9 @@ ChessEngine::ChessEngine() : white(true), black(false) {
 		}
 	}
 	Save();
+	actPieceLight.setSize(sf::Vector2f(FIELD_SIZE, FIELD_SIZE));
+	actPieceLight.setFillColor(sf::Color(250, 200, 25, 128));
+	actPieceLight.setPosition(sf::Vector2f(-100, -100));
 }
 
 void ChessEngine::Move(int player, sf::Vector2i from, sf::Vector2i to){
@@ -25,33 +31,8 @@ void ChessEngine::CheckVictory(){
 }
 
 void ChessEngine::draw(sf::RenderWindow* w){
-	/*int x, y;
-	char s;
-	for (int i = 0; i < white.GetNumOfPieces(); ++i) {
-		x = white.GetPieces()->at(i)->GetPos().x;
-		y = white.GetPieces()->at(i)->GetPos().y;
-		s = white.GetPieces()->at(i)->GetSymbol();
-		board[x][y] = white.GetPieces()->at(i);
-	}
-
-	for (int i = 0; i < black.GetNumOfPieces(); ++i) {
-		x = black.GetPieces()->at(i)->GetPos().x;
-		y = black.GetPieces()->at(i)->GetPos().y;
-		s = black.GetPieces()->at(i)->GetSymbol();
-		board[x][y] = black.GetPieces()->at(i);
-	}
-
-	for (int i = 0; i < 8; ++i) {
-		for (int j = 0; j < 8; ++j) {
-			if (board[i][j] == nullptr) {
-				std::cout << 'x';
-			}
-			else {
-				std::cout << board[i][j]->GetSymbol();
-			}
-		}
-		std::cout << std::endl;
-	}*/
+	//if (activePiece != nullptr) 
+		w->draw(actPieceLight);
 	white.draw(w);
 	black.draw(w);
 }
@@ -60,6 +41,7 @@ void ChessEngine::Load(std::string fileName){// = "satrtState.txt"){
 	std::cout << "load" << std::endl;
 	std::ifstream fin;
 	fin.open(fileName);
+
 	if (!fin.is_open()) {
 		std::cout << "not open" << std::endl;
 		std::cout << fileName << std::endl;
@@ -74,12 +56,6 @@ void ChessEngine::Load(std::string fileName){// = "satrtState.txt"){
 	fin >> num;
 
 	for (int i = 0; i < num; ++i) {
-		//std::getline(fin, line);
-		//symbol	= line[0];
-		//isWhite = line[1];
-		//x		= line[2];
-		//y		= line[3];
-
 		fin >> symbol >> isWhite >> x >> y;
 
 		if (isWhite) {
@@ -88,9 +64,6 @@ void ChessEngine::Load(std::string fileName){// = "satrtState.txt"){
 		else {
 			black.AddPiece(symbol, x, y);
 		}
-		//int x = i / 8;
-		//int y = i % 8;
-		//std::cout << x << ' ' << y << std::endl;
 	}
 
 	fin.close();
@@ -99,7 +72,6 @@ void ChessEngine::Load(std::string fileName){// = "satrtState.txt"){
 void ChessEngine::Save(std::string fileName){
 	std::cout << "save" << std::endl;
 	std::ofstream fout("quickSave.txt", std::ios::out);
-	//fout.open("maybe.txt", std::ios_base::out);
 	if (!fout.is_open()) {
 		std::cout << "not open" << std::endl;
 		std::cout << fileName << std::endl;
@@ -108,7 +80,6 @@ void ChessEngine::Save(std::string fileName){
 	int num = white.GetNumOfPieces() + black.GetNumOfPieces();
 	fout << num << std::endl;
 
-	//int x = white.GetPieces()->at(0)->GetPos().x;
 	Piece* temp;
 	for (int i = 0; i < white.GetNumOfPieces(); ++i){
 		temp = white.GetPieces()->at(i);
@@ -140,4 +111,29 @@ Player* ChessEngine::GetWhite(){
 
 Player* ChessEngine::GetBlack(){
 	return &black;
+}
+
+void ChessEngine::LmbInput(sf::Vector2i clickPos, Player* player){
+	//std::cout << clickPos.x << ' ' << clickPos.y << std::endl;
+	int x = clickPos.x / FIELD_SIZE;
+	int y = clickPos.y / FIELD_SIZE;
+	//std::cout << x << ' ' << y << std::endl;
+
+	//if (activePiece == nullptr) {
+		//if (board[x][y] != nullptr) {
+			//if (board[x][y]->white == player->isWhite()) {
+				activePiece = board[x][y];
+				
+				actPieceLight.setPosition(sf::Vector2f(x * FIELD_SIZE, y * FIELD_SIZE));
+				std::cout << actPieceLight.getPosition().x << ' ' << actPieceLight.getPosition().y << std::endl;
+			//}
+		//}
+	//}
+	/*else {
+		if (board[x][y] != nullptr) {
+			if (board[x][y]->white == player->isWhite()) {
+				activePiece = board[x][y];
+			}
+		}
+	}*/
 }

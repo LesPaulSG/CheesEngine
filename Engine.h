@@ -9,6 +9,8 @@ private:
 	Player white;
 	Player black;
 	GameState state;
+	Piece* activePiece;
+	sf::RectangleShape actPieceLight;
 
 
 public:
@@ -23,4 +25,5 @@ public:
 	std::vector<sf::Sprite> GetPiecesToDraw();
 	Player* GetWhite();
 	Player* GetBlack();
+	void LmbInput(sf::Vector2i clickPos, Player* player);
 };

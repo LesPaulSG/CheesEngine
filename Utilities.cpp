@@ -31,3 +31,8 @@ void foo(sf::RenderWindow* w)
 
 	w->draw(s);
 }
+
+void SpriteTransform(sf::Sprite* sprite, int x, int y){
+	sprite->setPosition(x * FIELD_SIZE, y * FIELD_SIZE);
+	sprite->setScale(PIECE_SCALE, PIECE_SCALE);
+}

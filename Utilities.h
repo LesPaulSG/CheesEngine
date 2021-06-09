@@ -5,6 +5,11 @@
 #include <string>
 #include <SFML/Graphics.hpp>
 
+const int FIELD_SIZE = 75;
+const float PIECE_SCALE = 0.27;
+const int WHITE_TEXTURE_HEIGHT = 0;
+const int BLACK_TEXTURE_HEIGHT = 330;
+
 enum GameState {GAME, CHECK, CMATE, STALE};
 
 static sf::Texture pawnTextureW;
@@ -24,3 +29,5 @@ static sf::Texture kingTextureB;
 void PreLoad();
 
 void foo(sf::RenderWindow* w);
+
+void SpriteTransform(sf::Sprite* sprite, int x, int y);

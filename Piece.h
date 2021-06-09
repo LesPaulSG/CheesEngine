@@ -25,6 +25,7 @@ public:
 	char GetSymbol();
 	sf::Vector2i GetPos();
 	void draw(sf::RenderWindow* w);
+	bool CanMoveHere(sf::Vector2i dest);
 	
 	const std::vector<sf::Vector2i>* GetAvaliableMoves();
 };
