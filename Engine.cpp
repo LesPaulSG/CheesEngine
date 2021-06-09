@@ -12,7 +12,7 @@ ChessEngine::ChessEngine() : white(true), black(false) {
 	Save();
 }
 
-void ChessEngine::Move(int player, Cell from, Cell to){
+void ChessEngine::Move(int player, sf::Vector2i from, sf::Vector2i to){
 
 }
 
@@ -24,8 +24,8 @@ void ChessEngine::CheckVictory(){
 
 }
 
-void ChessEngine::draw(){
-	int x, y;
+void ChessEngine::draw(sf::RenderWindow* w){
+	/*int x, y;
 	char s;
 	for (int i = 0; i < white.GetNumOfPieces(); ++i) {
 		x = white.GetPieces()->at(i)->GetPos().x;
@@ -40,6 +40,7 @@ void ChessEngine::draw(){
 		s = black.GetPieces()->at(i)->GetSymbol();
 		board[x][y] = black.GetPieces()->at(i);
 	}
+
 	for (int i = 0; i < 8; ++i) {
 		for (int j = 0; j < 8; ++j) {
 			if (board[i][j] == nullptr) {
@@ -50,7 +51,9 @@ void ChessEngine::draw(){
 			}
 		}
 		std::cout << std::endl;
-	}
+	}*/
+	white.draw(w);
+	black.draw(w);
 }
 
 void ChessEngine::Load(std::string fileName){// = "satrtState.txt"){
@@ -118,4 +121,23 @@ void ChessEngine::Save(std::string fileName){
 	}
 
 	fout.close();
+}
+
+std::vector<sf::Sprite> ChessEngine::GetPiecesToDraw(){
+	std::vector<sf::Sprite> sprites;
+	for (auto iter : *white.GetPieces()) {
+		sprites.push_back(iter->body);
+	}
+	for (auto iter : *black.GetPieces()) {
+		sprites.push_back(iter->body);
+	}
+	return sprites;
+}
+
+Player* ChessEngine::GetWhite(){
+	return &white;
+}
+
+Player* ChessEngine::GetBlack(){
+	return &black;
 }

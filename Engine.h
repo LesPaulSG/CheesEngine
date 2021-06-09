@@ -14,10 +14,13 @@ private:
 public:
 	ChessEngine();
 
-	void Move(int player, Cell from, Cell to);
+	void Move(int player, sf::Vector2i from, sf::Vector2i to);
 	void RoundEnd();
 	void CheckVictory();
-	void draw();//temp
+	void draw(sf::RenderWindow* w);//temp
 	void Load(std::string fileName = "startState.txt");
 	void Save(std::string fileName = "quickSave.txt");
+	std::vector<sf::Sprite> GetPiecesToDraw();
+	Player* GetWhite();
+	Player* GetBlack();
 };

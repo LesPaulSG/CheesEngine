@@ -13,4 +13,5 @@ public:
 	void AddPiece(char type, int x, int y);
 	const std::vector<Piece*>* GetPieces();
 	const int GetNumOfPieces() const;
+	void draw(sf::RenderWindow* w);
 };

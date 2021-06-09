@@ -8,20 +8,25 @@ enum class Move { CAN, NOT, KIL };
 
 class Piece {
 public:
-	Cell pos;
+	sf::Vector2i pos;
 	bool white;
 	fType type;
-	std::vector<Cell> avaliableMoves;
+	std::vector<sf::Vector2i> avaliableMoves;
+	sf::Texture tex;
+	sf::Sprite body;
+	//sf::CircleShape body;
 
 	Piece(int x, int y, bool white);
+	Piece(int x, int y, bool white, fType tp);
 	virtual void GenerateMoves() = 0;
 	virtual ~Piece() = default;
 
 //public:
 	char GetSymbol();
-	Cell GetPos();
+	sf::Vector2i GetPos();
+	void draw(sf::RenderWindow* w);
 	
-	const std::vector<Cell>* GetAvaliableMoves();
+	const std::vector<sf::Vector2i>* GetAvaliableMoves();
 };
 
 class Pawn : public Piece {
