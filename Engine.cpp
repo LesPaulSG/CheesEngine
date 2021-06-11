@@ -2,10 +2,19 @@
 
 #include "Engine.h"
 
-ChessEngine::ChessEngine() : 
-	white(true), 
+ChessEngine::ChessEngine() :
+	white(true),
 	black(false),
 	activePiece(nullptr) {
+	board.reserve(8);
+	for (int i = 0; i < 8; ++i) {
+		std::vector<Piece*> t;
+		t.reserve(8);
+		for (int i = 0; i < 8; ++i) {
+			t.push_back(nullptr);
+		}
+		board.push_back(t);
+	}
 	Load();
 	for (int i = 0; i < 8; ++i) {
 		for (int j = 0; j < 8; ++j) {
@@ -16,6 +25,25 @@ ChessEngine::ChessEngine() :
 	actPieceLight.setSize(sf::Vector2f(FIELD_SIZE, FIELD_SIZE));
 	actPieceLight.setFillColor(sf::Color(250, 200, 25, 128));
 	actPieceLight.setPosition(sf::Vector2f(-100, -100));
+	for (auto iter : *white.GetPieces()) {
+		int x = iter->pos.x;
+		int y = iter->pos.y;
+		board[x][y] = iter;
+	}
+	for (auto iter : *black.GetPieces()) {
+		int x = iter->pos.x;
+		int y = iter->pos.y;
+		board[x][y] = iter;
+	}
+	for (int i = 0; i < 8; ++i) {
+		for (int j = 0; j < 8; ++j) {
+			if (board[i][j] != nullptr) {
+				std::cout << board[i][j]->GetSymbol() << '|';
+			}
+			std::cout << '0' << '|';
+		}
+		std::cout << std::endl;
+	}
 }
 
 void ChessEngine::Move(int player, sf::Vector2i from, sf::Vector2i to){
@@ -23,7 +51,13 @@ void ChessEngine::Move(int player, sf::Vector2i from, sf::Vector2i to){
 }
 
 void ChessEngine::RoundEnd(){
-
+	whiteTurn = !whiteTurn;
+	for (auto iter : *white.GetPieces()) {
+		iter->GenerateMoves(board, whiteAttackFields);
+	}
+	for (auto iter : *black.GetPieces()) {
+		iter->GenerateMoves(board, blackAttackFields);
+	}
 }
 
 void ChessEngine::CheckVictory(){
@@ -31,7 +65,7 @@ void ChessEngine::CheckVictory(){
 }
 
 void ChessEngine::draw(sf::RenderWindow* w){
-	//if (activePiece != nullptr) 
+	if (activePiece != nullptr) 
 		w->draw(actPieceLight);
 	white.draw(w);
 	black.draw(w);
@@ -119,21 +153,58 @@ void ChessEngine::LmbInput(sf::Vector2i clickPos, Player* player){
 	int y = clickPos.y / FIELD_SIZE;
 	//std::cout << x << ' ' << y << std::endl;
 
-	//if (activePiece == nullptr) {
-		//if (board[x][y] != nullptr) {
-			//if (board[x][y]->white == player->isWhite()) {
-				activePiece = board[x][y];
-				
-				actPieceLight.setPosition(sf::Vector2f(x * FIELD_SIZE, y * FIELD_SIZE));
-				std::cout << actPieceLight.getPosition().x << ' ' << actPieceLight.getPosition().y << std::endl;
-			//}
-		//}
-	//}
-	/*else {
+	if (activePiece == nullptr) {
 		if (board[x][y] != nullptr) {
 			if (board[x][y]->white == player->isWhite()) {
 				activePiece = board[x][y];
+				activePiece->GenerateMoves(board, *GetAttackFields(player->isWhite()));
+				std::cout << board[x][y]->GetSymbol() << std::endl;
+				actPieceLight.setPosition(sf::Vector2f(x * FIELD_SIZE, y * FIELD_SIZE));
+				std::cout << actPieceLight.getPosition().x << ' ' << actPieceLight.getPosition().y << std::endl;
 			}
 		}
-	}*/
+	}
+	else {
+		if (activePiece->CanMoveHere(sf::Vector2i(x, y))) {
+			//MOVE
+			board[activePiece->pos.x][activePiece->pos.y] = nullptr;
+			if (board[x][y] != nullptr) {
+				if (player->isWhite()) {
+					black.DeletePiece(board[x][y]);
+				}
+				else {
+					white.DeletePiece(board[x][y]);
+				}
+			}
+			board[x][y] = activePiece;
+			activePiece->Move(sf::Vector2i(x, y));
+			activePiece = nullptr;
+		//	if (board[x][y]->white == player->isWhite()) {
+		//		activePiece = board[x][y];
+		//	}
+			//whiteTurn = !whiteTurn;
+			RoundEnd();
+		}
+		else {
+			activePiece = nullptr;
+		}
+	}
+}
+
+Piece* ChessEngine::GetActivePiece(){
+	if (activePiece != nullptr) {
+		return activePiece;
+	}
+	return nullptr;
+}
+
+bool ChessEngine::isWhiteTurn(){
+	return whiteTurn;
+}
+
+std::vector<sf::Vector2i>* ChessEngine::GetAttackFields(bool white){
+	if (white) {
+		return &whiteAttackFields;
+	}
+	return &blackAttackFields;
 }

@@ -15,4 +15,5 @@ public:
 	const int GetNumOfPieces() const;
 	void draw(sf::RenderWindow* w);
 	bool isWhite();
+	void DeletePiece(Piece* toDelete);
 };

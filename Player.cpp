@@ -27,8 +27,8 @@ void Player::AddPiece(char type, int x, int y){
 	case 'K':
 		pieces.push_back(new King(x, y, white));
 		break;
-	default:
-		break;
+	//default:
+	//	break;
 	}
 }
 
@@ -46,4 +46,15 @@ void Player::draw(sf::RenderWindow* w){
 
 bool Player::isWhite(){
 	return white;
+}
+
+void Player::DeletePiece(Piece* toDelete){
+	int i = 0;
+	for (auto iter : pieces) {
+		if (iter == toDelete) {
+			pieces.erase(pieces.begin()+i);
+			break;
+		}
+		++i;
+	}
 }

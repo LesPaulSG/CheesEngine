@@ -4,13 +4,14 @@ int main() {
 	bool gameOver = false;
 
 	ChessEngine engine;
-	sf::RenderWindow window(sf::VideoMode(1280, 720), "Chess");// , sf::Style::None);
+	sf::RenderWindow window(sf::VideoMode(600, 600), "Chess", sf::Style::None);
 
 	sf::RectangleShape temp(sf::Vector2f(FIELD_SIZE, FIELD_SIZE));
 
 	std::vector<sf::RectangleShape> boardVis;
-	std::vector<sf::RectangleShape> tmp;
+	std::vector<std::vector<sf::RectangleShape>> tmp;
 	boardVis.reserve(64);
+	tmp.reserve(8);
 
 	for (int i = 0; i < 8; ++i) {
 		for (int j = 0; j < 8; ++j) {
@@ -22,11 +23,14 @@ int main() {
 	}
 
 	for (int i = 0; i < 8; ++i) {
+		std::vector<sf::RectangleShape> t;
+		t.reserve(8);
 		for (int j = 0; j < 8; ++j) {
 			temp.setFillColor(sf::Color(0, 255, 0, 128));
 			temp.setPosition(i * FIELD_SIZE, j * FIELD_SIZE);
-			tmp.push_back(temp);
+			t.push_back(temp);
 		}
+		tmp.push_back(t);
 		std::cout << std::endl;
 	}
 
@@ -38,17 +42,33 @@ int main() {
 			}
 			else if (event.type == sf::Event::MouseButtonReleased) {
 				if (event.mouseButton.button == sf::Mouse::Left) {
-					engine.LmbInput(sf::Mouse::getPosition(window), engine.GetWhite());
+					if (engine.isWhiteTurn()) {
+						engine.LmbInput(sf::Mouse::getPosition(window), engine.GetWhite());
+					}
+					else {
+						engine.LmbInput(sf::Mouse::getPosition(window), engine.GetBlack());
+					}
 				}
 			}
+			/*if (event.type == sf::Event::MouseButtonReleased) {
+				if (event.mouseButton.button == sf::Mouse::Right) {
+					if (!engine.isWhiteTurn()) {
+						engine.LmbInput(sf::Mouse::getPosition(window), engine.GetBlack());
+					}
+				}
+			}*/
 		}
 
 		window.clear();
 		for (int i = 0; i < 64; ++i) {
 			window.draw(boardVis.at(i));
 		}
-		for (int i = 0; i < 64; ++i) {
-			//window.draw(tmp.at(i));
+		if (engine.GetActivePiece() != nullptr) {
+			for (int i = 0; i < 8; ++i) {
+				for (int j = 0; j < 8; ++j) {
+					if (engine.GetActivePiece()->CanMoveHere(sf::Vector2i(j, i))) window.draw(tmp.at(j).at(i));
+				}
+			}
 		}
 
 		engine.draw(&window);
