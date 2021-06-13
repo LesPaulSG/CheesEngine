@@ -1,76 +1,108 @@
 #include "Piece.h"
 
-bool isFieldFree(std::vector<std::vector<Piece*>>& board, int x, int y) {
+bool Piece::isFieldFree(int x, int y) {
 	if (x < 0 || x > 7) return false;
 	if (y < 0 || y > 7) return false;
-	if (board[x][y] == nullptr) {
+	if (boardPtr->at(x).at(y) == nullptr) {
 		return true;
 	}
 	return false;
 }
 
-bool isEnemyInField(std::vector<std::vector<Piece*>>& board, int x, int y, bool white) {
+bool Piece::isEnemyInField(int x, int y, bool white) {
 	if (x < 0 || x > 7) return false;
 	if (y < 0 || y > 7) return false;
-	if (board[x][y] != nullptr) {
-		if (board[x][y]->white != white) {
+	if (boardPtr->at(x).at(y) != nullptr) {
+		if (boardPtr->at(x).at(y)->white != white) {
+			std::cout << x << ' ' << y << ' ' << boardPtr->at(x).at(y)->GetSymbol() << std::endl;
 			return true;
 		}
 	}
 	return false;
 }
 
-void ContinuousMoving(Piece* p, int xDir, int yDir, std::vector<std::vector<Piece*>>& board, std::vector<sf::Vector2i>& fieldsUnderAttack){
-	int x = p->pos.x + xDir;
-	int y = p->pos.y + yDir;
-	while ((x >= 0) && (x <= 7) && (y >= 0) && (y <= 7)) {
-		if (isFieldFree(board, x, y)) {
-			//if (!ProverkaNaShah(p, x, y, board)) {
-				p->avaliableMoves.push_back(sf::Vector2i(x, y));
-				std::cout << "free" << x << ' ' << y << std::endl;
-				x += xDir;
-				y += yDir;
-			//}
-		}
-		else if (isEnemyInField(board, x, y, p->white)) {
-			//if (!ProverkaNaShah(p, x, y, board)) {
-				p->avaliableMoves.push_back(sf::Vector2i(x, y));
-				std::cout << "enemy" << x << ' ' << y << std::endl;
-				fieldsUnderAttack.push_back(sf::Vector2i(x, y));
-				break;
-			//}
-		}
-		else {
-			std::cout << "ally" << x << ' ' << y << std::endl;
-			break;
-		}
+bool Piece::isFieldAvaliable(int x, int y, int depth) {
+	if (isFieldFree(x, y)) {
+		//if ((depth <= 0) || !ProverkaNaShah(x, y, depth - 1)) {
+			avaliableMoves.push_back(sf::Vector2i(x, y));
+			return true;
+		//}
+	}
+	else if (isEnemyInField(x, y, white)) {
+		//if ((depth <= 0) || !ProverkaNaShah(x, y, depth - 1)) {
+			avaliableAttacks.push_back(sf::Vector2i(x, y));
+			return false;
+		//}
+	}
+	else {
+		return false;
 	}
 }
 
-bool ProverkaNaShah(Piece* p, int x, int y, std::vector<std::vector<Piece*>> board){
-	board[p->pos.x][p->pos.y] == nullptr;
-	board[x][y] = p;
+void Piece::ContinuousMoving(int xDir, int yDir, int depth = 1){
+	int x = pos.x + xDir;
+	int y = pos.y + yDir;
+	while ((x >= 0) && (x <= 7) && (y >= 0) && (y <= 7)) {
+		if (!isFieldAvaliable(x, y, depth)) {
+			break;
+		}
+		x += xDir;
+		y += yDir;
+	}
+}
+
+bool Piece::ProverkaNaShah(int x, int y, int depth){
+	//std::vector<std::vector<Piece*>> boardCopy = *boardPtr;
+	/*for (int i = 0; i < 8; ++i) {
+		std::vector<Piece*> tmp;
+		tmp.reserve(8);
+		for (int j = 0; j < 8; ++j) {
+			if (boardPtr->at(i).at(j) != nullptr) {
+				tmp.push_back(new Piece(*boardPtr->at(i).at(j)));
+			}
+			else {
+				tmp.push_back(nullptr);
+			}
+		}
+		boardCopy.push_back(tmp);
+	}*/
+	int oldX = pos.x, oldY = pos.y;
+	Piece* oldPtr = boardPtr->at(x).at(y);
+	boardPtr->at(pos.x).at(pos.y) == nullptr;
+	boardPtr->at(x).at(y) = this;
 	std::vector<sf::Vector2i> attack;
-	for (auto vec : board) {
+	for (auto vec : *boardPtr) {
 		for (auto iter : vec) {
 			if (iter != nullptr) {
-				iter->GenerateMoves(board, attack);
+				iter->GenerateMoves(depth-1);
 			}
 		}
 	}
-	Piece* king = p->white ? whiteKing : blackKing;
+	Piece* king = white ? whiteKing : blackKing;
 	for (auto iter : attack) {
 		if (iter == king->pos) {
+			//boardPtr->at(oldX).at(oldY) = this;
+			//boardPtr->at(pos.x).at(pos.y) = oldPtr;
+			//GenerateMoves(0);
 			return true;
 		}
 	}
+	//boardPtr->at(oldX).at(oldY) = this;
+	//boardPtr->at(pos.x).at(pos.y) = oldPtr;
+	//GenerateMoves(0);
 	return false;
 }
 
-Piece::Piece(int x, int y, bool white) : 
+Piece::Piece(int x, int y, bool white, std::vector<std::vector<Piece*>>& board) :
 	pos(x, y), 
 	white(white), 
-	type(fType::DFLT) {
+	type(fType::DFLT),
+	boardPtr(&board) {
+}
+
+void Piece::GenerateMoves(int depth){
+	avaliableMoves.clear();
+	avaliableAttacks.clear();
 }
 
 char Piece::GetSymbol(){
@@ -94,9 +126,30 @@ bool Piece::CanMoveHere(sf::Vector2i dest){
 	return false;
 }
 
+bool Piece::CanAttackHere(sf::Vector2i dest){
+	for (auto iter : avaliableAttacks) {
+		if (iter == dest) {
+			return true;
+		}
+	}
+	return false;
+}
+
 void Piece::Move(sf::Vector2i newPos){
 	pos = newPos;
 	body.setPosition(pos.x * FIELD_SIZE, pos.y * FIELD_SIZE);
+	firstMove = false;
+	for (int i = 0; i < 8; ++i) {
+		for (int j = 0; j < 8; ++j) {
+			if (boardPtr->at(j).at(i) != nullptr) {
+				std::cout << boardPtr->at(j).at(i)->GetSymbol() << '|';
+			}
+			else {
+				std::cout << '.' << '|';
+			}
+		}
+		std::cout << std::endl;
+	}
 	firstMove = false;
 }
 
@@ -104,34 +157,27 @@ const std::vector<sf::Vector2i>* Piece::GetAvaliableMoves(){
 	return &avaliableMoves;
 }
 
-void Pawn::GenerateMoves(std::vector<std::vector<Piece*>>& board, std::vector<sf::Vector2i>& fieldsUnderAttack) {
-	avaliableMoves.clear();
+void Pawn::GenerateMoves(int depth) {
+	Piece::GenerateMoves(0);
 	int offsetY = white ? -1 : 1;
-	if (isEnemyInField(board, pos.x + 1, pos.y + offsetY, white)) {
+	if (isEnemyInField(pos.x + 1, pos.y + offsetY, white)) {
 		//if (!ProverkaNaShah(this, pos.x + 1, pos.y + offsetY, board)) {
-			avaliableMoves.push_back(sf::Vector2i(pos.x + 1, pos.y + offsetY));
-			fieldsUnderAttack.push_back(sf::Vector2i(pos.x + 1, pos.y + offsetY));
+			avaliableAttacks.push_back(sf::Vector2i(pos.x + 1, pos.y + offsetY));
 		//}
 	}
-	if (isEnemyInField(board, pos.x - 1, pos.y + offsetY, white)) {
+	if (isEnemyInField(pos.x - 1, pos.y + offsetY, white)) {
 		//if (!ProverkaNaShah(this, pos.x - 1, pos.y + offsetY, board)) {
-			avaliableMoves.push_back(sf::Vector2i(pos.x - 1, pos.y + offsetY));
-			fieldsUnderAttack.push_back(sf::Vector2i(pos.x - 1, pos.y + offsetY));
+			avaliableAttacks.push_back(sf::Vector2i(pos.x - 1, pos.y + offsetY));
 		//}
 	}
-	if ((isFieldFree(board, pos.x, pos.y + offsetY*2)&&Piece::firstMove)) {
-		//if (!ProverkaNaShah(this, pos.x, pos.y + offsetY * 2, board)) {
-			avaliableMoves.push_back(sf::Vector2i(pos.x, pos.y + offsetY * 2));
-		//}
-	}
-	if (isFieldFree(board, pos.x, pos.y + offsetY)) {
-		//if (!ProverkaNaShah(this, pos.x, pos.y + offsetY, board)) {
-			avaliableMoves.push_back(sf::Vector2i(pos.x, pos.y + offsetY));
-		//}
+	isFieldAvaliable(pos.x,		pos.y + offsetY, 1);
+	if (Piece::firstMove) {
+		isFieldAvaliable(pos.x, pos.y + offsetY * 2, 1);
 	}
 }
 
-Pawn::Pawn(int x, int y, bool white) : Piece(x, y, white) {
+Pawn::Pawn(int x, int y, bool white, std::vector<std::vector<Piece*>>& board) :
+	Piece(x, y, white, board) {
 	Piece::type = fType::PAWN;
 	int h = white ? WHITE_TEXTURE_HEIGHT : BLACK_TEXTURE_HEIGHT;
 	tex.loadFromFile("piecesTexture.png", sf::IntRect(1650, h, 260, 300));
@@ -139,15 +185,16 @@ Pawn::Pawn(int x, int y, bool white) : Piece(x, y, white) {
 	SpriteTransform(&body, pos.x, pos.y);
 }
 
-void Bishop::GenerateMoves(std::vector<std::vector<Piece*>>& board, std::vector<sf::Vector2i>& fieldsUnderAttack){
-	avaliableMoves.clear();
-	ContinuousMoving(this,  1, -1, board, fieldsUnderAttack);
-	ContinuousMoving(this,  1,  1, board, fieldsUnderAttack);
-	ContinuousMoving(this, -1, -1, board, fieldsUnderAttack);
-	ContinuousMoving(this, -1,  1, board, fieldsUnderAttack);
+void Bishop::GenerateMoves(int depth){
+	Piece::GenerateMoves(0);
+	ContinuousMoving(1, -1);
+	ContinuousMoving(1,  1);
+	ContinuousMoving(-1, -1);
+	ContinuousMoving(-1,  1);
 }
 
-Bishop::Bishop(int x, int y, bool white) : Piece(x, y, white) {
+Bishop::Bishop(int x, int y, bool white, std::vector<std::vector<Piece*>>& board) : 
+	Piece(x, y, white, board) {
 	Piece::type = fType::BSHP;
 	int h = white ? WHITE_TEXTURE_HEIGHT : BLACK_TEXTURE_HEIGHT;
 	tex.loadFromFile("piecesTexture.png", sf::IntRect(660, h, 280, 300));
@@ -155,60 +202,21 @@ Bishop::Bishop(int x, int y, bool white) : Piece(x, y, white) {
 	SpriteTransform(&body, pos.x, pos.y);
 }
 
-void Knight::GenerateMoves(std::vector<std::vector<Piece*>>& board, std::vector<sf::Vector2i>& fieldsUnderAttack){
-	avaliableMoves.clear();
-	if ((isFieldFree(board, pos.x + 1, pos.y - 2) || isEnemyInField(board, pos.x + 1, pos.y - 2, white))) {
-		//if (!ProverkaNaShah(this, pos.x + 1, pos.y - 2, board)) {
-			avaliableMoves.push_back(sf::Vector2i(pos.x + 1, pos.y - 2));
-			fieldsUnderAttack.push_back(sf::Vector2i(pos.x + 1, pos.y - 2));
-		//}
-	}
-	if ((isFieldFree(board, pos.x - 1, pos.y - 2) || isEnemyInField(board, pos.x - 1, pos.y - 2, white))) {
-		//if (!ProverkaNaShah(this, pos.x - 1, pos.y - 2, board)) {
-			avaliableMoves.push_back(sf::Vector2i(pos.x - 1, pos.y - 2));
-			fieldsUnderAttack.push_back(sf::Vector2i(pos.x - 1, pos.y - 2));
-		//}
-	}
-	if ((isFieldFree(board, pos.x - 2, pos.y - 1) || isEnemyInField(board, pos.x - 2, pos.y - 1, white))) {
-		//if (!ProverkaNaShah(this, pos.x - 2, pos.y - 1, board)) {
-			avaliableMoves.push_back(sf::Vector2i(pos.x - 2, pos.y - 1));
-			fieldsUnderAttack.push_back(sf::Vector2i(pos.x - 2, pos.y - 1));
-		//}
-	}
-	if ((isFieldFree(board, pos.x + 2, pos.y - 1) || isEnemyInField(board, pos.x + 2, pos.y - 1, white))) {
-		//if (!ProverkaNaShah(this, pos.x + 2, pos.y - 1, board)) {
-			avaliableMoves.push_back(sf::Vector2i(pos.x + 2, pos.y - 1));
-			fieldsUnderAttack.push_back(sf::Vector2i(pos.x + 2, pos.y - 1));
-		//}
-	}
-	if ((isFieldFree(board, pos.x - 2, pos.y + 1) || isEnemyInField(board, pos.x - 2, pos.y + 1, white))) {
-		//if (!ProverkaNaShah(this, pos.x - 2, pos.y + 1, board)) {
-			avaliableMoves.push_back(sf::Vector2i(pos.x - 2, pos.y + 1));
-			fieldsUnderAttack.push_back(sf::Vector2i(pos.x - 2, pos.y + 1));
-		//}
-	}
-	if ((isFieldFree(board, pos.x + 2, pos.y + 1) || isEnemyInField(board, pos.x + 2, pos.y + 1, white))) {
-		//if (!ProverkaNaShah(this, pos.x + 2, pos.y + 1, board)) {
-			avaliableMoves.push_back(sf::Vector2i(pos.x + 2, pos.y + 1));
-			fieldsUnderAttack.push_back(sf::Vector2i(pos.x + 2, pos.y + 1));
-		//}
-	}
-	if ((isFieldFree(board, pos.x + 1, pos.y + 2) || isEnemyInField(board, pos.x + 1, pos.y + 2, white))) {
-		//if (!ProverkaNaShah(this, pos.x + 1, pos.y + 2, board)) {
-			avaliableMoves.push_back(sf::Vector2i(pos.x + 1, pos.y + 2));
-			fieldsUnderAttack.push_back(sf::Vector2i(pos.x + 1, pos.y + 2));
-		//}
-	}
-	if ((isFieldFree(board, pos.x - 1, pos.y + 2) || isEnemyInField(board, pos.x - 1, pos.y + 2, white))) {
-		//if (!ProverkaNaShah(this, pos.x - 1, pos.y + 2, board)) {
-			avaliableMoves.push_back(sf::Vector2i(pos.x - 1, pos.y + 2));
-			fieldsUnderAttack.push_back(sf::Vector2i(pos.x - 1, pos.y + 2));
-		//}
-	}
+void Knight::GenerateMoves(int depth){
+	Piece::GenerateMoves(0);
+	isFieldAvaliable(pos.x + 1, pos.y - 2, 1);
+	isFieldAvaliable(pos.x - 1, pos.y - 2, 1);
+	isFieldAvaliable(pos.x - 2, pos.y - 1, 1);
+	isFieldAvaliable(pos.x + 2, pos.y - 1, 1);
+	isFieldAvaliable(pos.x - 2, pos.y + 1, 1);
+	isFieldAvaliable(pos.x + 2, pos.y + 1, 1);
+	isFieldAvaliable(pos.x + 1, pos.y + 2, 1);
+	isFieldAvaliable(pos.x - 1, pos.y + 2, 1);
 	
 }
 
-Knight::Knight(int x, int y, bool white) : Piece(x, y, white) {
+Knight::Knight(int x, int y, bool white, std::vector<std::vector<Piece*>>& board) : 
+	Piece(x, y, white, board) {
 	Piece::type = fType::KNHT;
 	int h = white ? WHITE_TEXTURE_HEIGHT : BLACK_TEXTURE_HEIGHT;
 	tex.loadFromFile("piecesTexture.png", sf::IntRect(990, h, 280, 300));
@@ -216,15 +224,16 @@ Knight::Knight(int x, int y, bool white) : Piece(x, y, white) {
 	SpriteTransform(&body, pos.x, pos.y);
 }
 
-void Rook::GenerateMoves(std::vector<std::vector<Piece*>>& board, std::vector<sf::Vector2i>& fieldsUnderAttack){
-	avaliableMoves.clear();
-	ContinuousMoving(this,  1,  0, board, fieldsUnderAttack);
-	ContinuousMoving(this,  0,  1, board, fieldsUnderAttack);
-	ContinuousMoving(this, -1,  0, board, fieldsUnderAttack);
-	ContinuousMoving(this,  0, -1, board, fieldsUnderAttack);
+void Rook::GenerateMoves(int depth){
+	Piece::GenerateMoves(0);
+	ContinuousMoving(1,  0);
+	ContinuousMoving(0,  1);
+	ContinuousMoving(-1,  0);
+	ContinuousMoving(0, -1);
 }
 
-Rook::Rook(int x, int y, bool white) : Piece(x, y, white) {
+Rook::Rook(int x, int y, bool white, std::vector<std::vector<Piece*>>& board) : 
+	Piece(x, y, white, board) {
 	Piece::type = fType::ROOK;
 	int h = white ? WHITE_TEXTURE_HEIGHT : BLACK_TEXTURE_HEIGHT;
 	tex.loadFromFile("piecesTexture.png", sf::IntRect(1320, h, 260, 300));
@@ -232,19 +241,20 @@ Rook::Rook(int x, int y, bool white) : Piece(x, y, white) {
 	SpriteTransform(&body, pos.x, pos.y);
 }
 
-void Queen::GenerateMoves(std::vector<std::vector<Piece*>>& board, std::vector<sf::Vector2i>& fieldsUnderAttack){
-	avaliableMoves.clear();
-	ContinuousMoving(this,  1, -1, board, fieldsUnderAttack);
-	ContinuousMoving(this,  1,  1, board, fieldsUnderAttack);
-	ContinuousMoving(this, -1, -1, board, fieldsUnderAttack);
-	ContinuousMoving(this, -1,  1, board, fieldsUnderAttack);
-	ContinuousMoving(this,  1,  0, board, fieldsUnderAttack);
-	ContinuousMoving(this,  0,  1, board, fieldsUnderAttack);
-	ContinuousMoving(this, -1,  0, board, fieldsUnderAttack);
-	ContinuousMoving(this,  0, -1, board, fieldsUnderAttack);
+void Queen::GenerateMoves(int depth){
+	Piece::GenerateMoves(0);
+	ContinuousMoving(1, -1);
+	ContinuousMoving(1,  1);
+	ContinuousMoving(-1, -1);
+	ContinuousMoving(-1,  1);
+	ContinuousMoving(1,  0);
+	ContinuousMoving(0,  1);
+	ContinuousMoving(-1,  0);
+	ContinuousMoving(0, -1);
 }
 
-Queen::Queen(int x, int y, bool white) : Piece(x, y, white) {
+Queen::Queen(int x, int y, bool white, std::vector<std::vector<Piece*>>& board) : 
+	Piece(x, y, white, board) {
 	Piece::type = fType::QUEN;
 	int h = white ? WHITE_TEXTURE_HEIGHT : BLACK_TEXTURE_HEIGHT;
 	tex.loadFromFile("piecesTexture.png", sf::IntRect(325, h, 300, 300));
@@ -252,19 +262,20 @@ Queen::Queen(int x, int y, bool white) : Piece(x, y, white) {
 	SpriteTransform(&body, pos.x, pos.y);
 }
 
-void King::GenerateMoves(std::vector<std::vector<Piece*>>& board, std::vector<sf::Vector2i>& fieldsUnderAttack){
-	avaliableMoves.clear();
-	avaliableMoves.push_back(sf::Vector2i(pos.x + 1, pos.y - 1));
-	avaliableMoves.push_back(sf::Vector2i(pos.x, pos.y - 1));
-	avaliableMoves.push_back(sf::Vector2i(pos.x - 1, pos.y - 1));
-	avaliableMoves.push_back(sf::Vector2i(pos.x + 1, pos.y));
-	avaliableMoves.push_back(sf::Vector2i(pos.x - 1, pos.y));
-	avaliableMoves.push_back(sf::Vector2i(pos.x + 1, pos.y + 1));
-	avaliableMoves.push_back(sf::Vector2i(pos.x, pos.y + 1));
-	avaliableMoves.push_back(sf::Vector2i(pos.x - 1, pos.y + 1));
+void King::GenerateMoves(int depth){
+	Piece::GenerateMoves(0);
+	isFieldAvaliable(pos.x + 1, pos.y - 1, 1);
+	isFieldAvaliable(pos.x + 0, pos.y - 1, 1);
+	isFieldAvaliable(pos.x - 1, pos.y - 1, 1);
+	isFieldAvaliable(pos.x + 1, pos.y + 0, 1);
+	isFieldAvaliable(pos.x - 1 ,pos.y + 0, 1);
+	isFieldAvaliable(pos.x + 1, pos.y + 1, 1);
+	isFieldAvaliable(pos.x + 0, pos.y + 1, 1);
+	isFieldAvaliable(pos.x - 1, pos.y + 1, 1);
 }
 
-King::King(int x, int y, bool white) : Piece(x, y, white) {
+King::King(int x, int y, bool white, std::vector<std::vector<Piece*>>& board) : 
+	Piece(x, y, white, board) {
 	Piece::type = fType::KING;
 	int h = white ? WHITE_TEXTURE_HEIGHT : BLACK_TEXTURE_HEIGHT;
 	tex.loadFromFile("piecesTexture.png", sf::IntRect(0, h, 260, 300));

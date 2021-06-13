@@ -12,14 +12,16 @@ public:
 	bool white;
 	bool firstMove = true;
 	fType type;
+	std::vector<std::vector<Piece*>>* boardPtr;
 	std::vector<sf::Vector2i> avaliableMoves;
+	std::vector<sf::Vector2i> avaliableAttacks;
 	sf::Texture tex;
 	sf::Sprite body;
 	//sf::CircleShape body;
 
-	Piece(int x, int y, bool white);
+	Piece(int x, int y, bool white, std::vector<std::vector<Piece*>>& board);
 	Piece(int x, int y, bool white, fType tp);
-	virtual void GenerateMoves(std::vector<std::vector<Piece*>>& board, std::vector<sf::Vector2i>& fieldsUnderAttack) = 0;
+	virtual void GenerateMoves(int depth);
 	virtual ~Piece() = default;
 
 //public:
@@ -27,18 +29,22 @@ public:
 	sf::Vector2i GetPos();
 	void draw(sf::RenderWindow* w);
 	bool CanMoveHere(sf::Vector2i dest);
+	bool CanAttackHere(sf::Vector2i dest);
 	void Move(sf::Vector2i newPos);
-	
+
+	bool isFieldFree(int x, int y);
+	bool isEnemyInField(int x, int y, bool white);
+	bool isFieldAvaliable(int x, int y, int depth);
+	void ContinuousMoving(int xDir, int yDir, int depth);
+	bool ProverkaNaShah(int x, int y, int depth);
+
 	const std::vector<sf::Vector2i>* GetAvaliableMoves();
 };
 
 static Piece* whiteKing;
 static Piece* blackKing;
 
-bool isFieldFree(std::vector<std::vector<Piece*>>& board, int x, int y);
-bool isEnemyInField(std::vector<std::vector<Piece*>>& board, int x, int y, bool white);
-void ContinuousMoving(Piece* p, int xDir, int yDir, std::vector<std::vector<Piece*>>& board, std::vector<sf::Vector2i>& fieldsUnderAttack);
-bool ProverkaNaShah(Piece* p, int x, int y, std::vector<std::vector<Piece*>> board);
+
 
 class Pawn : public Piece {
 private:
@@ -46,8 +52,8 @@ private:
 	bool firstMove = true;
 
 public:
-	void GenerateMoves(std::vector<std::vector<Piece*>>& board, std::vector<sf::Vector2i>& fieldsUnderAttack) override;
-	Pawn(int x, int y, bool white);
+	void GenerateMoves(int depth) override;
+	Pawn(int x, int y, bool white, std::vector<std::vector<Piece*>>& board);
 };
 
 class Bishop : public Piece {
@@ -55,8 +61,8 @@ private:
 	//fType Piece::type = BSHP;
 
 public:
-	void GenerateMoves(std::vector<std::vector<Piece*>>& board, std::vector<sf::Vector2i>& fieldsUnderAttack) override;
-	Bishop(int x, int y, bool white);
+	void GenerateMoves(int depth) override;
+	Bishop(int x, int y, bool white, std::vector<std::vector<Piece*>>& board);
 };
 
 class Knight : public Piece {
@@ -64,8 +70,8 @@ private:
 	//fType Piece::type = KNHT;
 
 public:
-	void GenerateMoves(std::vector<std::vector<Piece*>>& board, std::vector<sf::Vector2i>& fieldsUnderAttack) override;
-	Knight(int x, int y, bool white);
+	void GenerateMoves(int depth) override;
+	Knight(int x, int y, bool white, std::vector<std::vector<Piece*>>& board);
 };
 
 class Rook : public Piece {
@@ -74,8 +80,8 @@ private:
 	bool firstMove = true;
 
 public:
-	void GenerateMoves(std::vector<std::vector<Piece*>>& board, std::vector<sf::Vector2i>& fieldsUnderAttack) override;
-	Rook(int x, int y, bool white);
+	void GenerateMoves(int depth) override;
+	Rook(int x, int y, bool white, std::vector<std::vector<Piece*>>& board);
 };
 
 class Queen : public Piece {
@@ -83,8 +89,8 @@ private:
 	//fType Piece::type = QUEN;
 
 public:
-	void GenerateMoves(std::vector<std::vector<Piece*>>& board, std::vector<sf::Vector2i>& fieldsUnderAttack) override;
-	Queen(int x, int y, bool white);
+	void GenerateMoves(int depth) override;
+	Queen(int x, int y, bool white, std::vector<std::vector<Piece*>>& board);
 };
 
 class King : public Piece {
@@ -93,6 +99,6 @@ private:
 	bool firstMove = true;
 
 public:
-	void GenerateMoves(std::vector<std::vector<Piece*>>& board, std::vector<sf::Vector2i>& fieldsUnderAttack) override;
-	King(int x, int y, bool white);
+	void GenerateMoves(int depth) override;
+	King(int x, int y, bool white, std::vector<std::vector<Piece*>>& board);
 };

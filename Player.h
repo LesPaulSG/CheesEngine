@@ -10,7 +10,7 @@ private:
 
 public:
 	Player(bool isWhite);
-	void AddPiece(char type, int x, int y);
+	void AddPiece(char type, int x, int y, std::vector<std::vector<Piece*>>& board);
 	const std::vector<Piece*>* GetPieces();
 	const int GetNumOfPieces() const;
 	void draw(sf::RenderWindow* w);

@@ -35,15 +35,20 @@ ChessEngine::ChessEngine() :
 		int y = iter->pos.y;
 		board[x][y] = iter;
 	}
-	for (int i = 0; i < 8; ++i) {
+	/*for (int i = 0; i < 8; ++i) {
 		for (int j = 0; j < 8; ++j) {
-			if (board[i][j] != nullptr) {
-				std::cout << board[i][j]->GetSymbol() << '|';
+			if (board[j][i] != nullptr) {
+				std::cout << board[j][i]->GetSymbol() << '|';
 			}
-			std::cout << '0' << '|';
+			else {
+				std::cout << '0' << '|';
+			}
 		}
 		std::cout << std::endl;
-	}
+	}*/
+
+	RoundEnd();
+	whiteTurn = true;
 }
 
 void ChessEngine::Move(int player, sf::Vector2i from, sf::Vector2i to){
@@ -53,10 +58,10 @@ void ChessEngine::Move(int player, sf::Vector2i from, sf::Vector2i to){
 void ChessEngine::RoundEnd(){
 	whiteTurn = !whiteTurn;
 	for (auto iter : *white.GetPieces()) {
-		iter->GenerateMoves(board, whiteAttackFields);
+		iter->GenerateMoves(1);
 	}
 	for (auto iter : *black.GetPieces()) {
-		iter->GenerateMoves(board, blackAttackFields);
+		iter->GenerateMoves(1);
 	}
 }
 
@@ -93,10 +98,10 @@ void ChessEngine::Load(std::string fileName){// = "satrtState.txt"){
 		fin >> symbol >> isWhite >> x >> y;
 
 		if (isWhite) {
-			white.AddPiece(symbol, x, y);
+			white.AddPiece(symbol, x, y, board);
 		}
 		else {
-			black.AddPiece(symbol, x, y);
+			black.AddPiece(symbol, x, y, board);
 		}
 	}
 
@@ -157,16 +162,18 @@ void ChessEngine::LmbInput(sf::Vector2i clickPos, Player* player){
 		if (board[x][y] != nullptr) {
 			if (board[x][y]->white == player->isWhite()) {
 				activePiece = board[x][y];
-				activePiece->GenerateMoves(board, *GetAttackFields(player->isWhite()));
-				std::cout << board[x][y]->GetSymbol() << std::endl;
+				//activePiece->GenerateMoves(board, *GetAttackFields(player->isWhite()), 0);
+				//std::cout << board[x][y]->GetSymbol() << std::endl;
 				actPieceLight.setPosition(sf::Vector2f(x * FIELD_SIZE, y * FIELD_SIZE));
-				std::cout << actPieceLight.getPosition().x << ' ' << actPieceLight.getPosition().y << std::endl;
+				//std::cout << actPieceLight.getPosition().x << ' ' << actPieceLight.getPosition().y << std::endl;
+				for (auto iter : activePiece->avaliableAttacks) {
+					std::cout << iter.x << ' ' << iter.y << std::endl;
+				}
 			}
 		}
 	}
 	else {
-		if (activePiece->CanMoveHere(sf::Vector2i(x, y))) {
-			//MOVE
+		if (activePiece->CanMoveHere(sf::Vector2i(x, y))||activePiece->CanAttackHere(sf::Vector2i(x, y))) {
 			board[activePiece->pos.x][activePiece->pos.y] = nullptr;
 			if (board[x][y] != nullptr) {
 				if (player->isWhite()) {
