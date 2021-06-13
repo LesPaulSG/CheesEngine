@@ -7,21 +7,18 @@ ChessEngine::ChessEngine() :
 	black(false),
 	activePiece(nullptr) {
 	board.reserve(8);
+	boardVis.reserve(32);
 	for (int i = 0; i < 8; ++i) {
 		std::vector<Piece*> t;
 		t.reserve(8);
-		for (int i = 0; i < 8; ++i) {
+		for (int j = 0; j < 8; ++j) {
 			t.push_back(nullptr);
 		}
 		board.push_back(t);
 	}
+	
 	Load();
-	for (int i = 0; i < 8; ++i) {
-		for (int j = 0; j < 8; ++j) {
-			board[i][j] = nullptr;
-		}
-	}
-	Save();
+	
 	actPieceLight.setSize(sf::Vector2f(FIELD_SIZE, FIELD_SIZE));
 	actPieceLight.setFillColor(sf::Color(250, 200, 25, 128));
 	actPieceLight.setPosition(sf::Vector2f(-100, -100));
@@ -35,17 +32,6 @@ ChessEngine::ChessEngine() :
 		int y = iter->pos.y;
 		board[x][y] = iter;
 	}
-	/*for (int i = 0; i < 8; ++i) {
-		for (int j = 0; j < 8; ++j) {
-			if (board[j][i] != nullptr) {
-				std::cout << board[j][i]->GetSymbol() << '|';
-			}
-			else {
-				std::cout << '0' << '|';
-			}
-		}
-		std::cout << std::endl;
-	}*/
 
 	RoundEnd();
 	whiteTurn = true;
@@ -63,6 +49,9 @@ void ChessEngine::RoundEnd(){
 	for (auto iter : *black.GetPieces()) {
 		iter->GenerateMoves(1);
 	}
+	for (auto iter : boardVis) {
+		iter->Update();
+	}
 }
 
 void ChessEngine::CheckVictory(){
@@ -72,12 +61,12 @@ void ChessEngine::CheckVictory(){
 void ChessEngine::draw(sf::RenderWindow* w){
 	if (activePiece != nullptr) 
 		w->draw(actPieceLight);
-	white.draw(w);
-	black.draw(w);
+	for (auto iter : boardVis) {
+		iter->Draw(w);
+	}
 }
 
 void ChessEngine::Load(std::string fileName){// = "satrtState.txt"){
-	std::cout << "load" << std::endl;
 	std::ifstream fin;
 	fin.open(fileName);
 
@@ -104,12 +93,17 @@ void ChessEngine::Load(std::string fileName){// = "satrtState.txt"){
 			black.AddPiece(symbol, x, y, board);
 		}
 	}
+	for (auto iter : *white.GetPieces()) {
+		boardVis.push_back(new PieceVis(iter));
+	}
+	for (auto iter : *black.GetPieces()) {
+		boardVis.push_back(new PieceVis(iter));
+	}
 
 	fin.close();
 }
 
 void ChessEngine::Save(std::string fileName){
-	std::cout << "save" << std::endl;
 	std::ofstream fout("quickSave.txt", std::ios::out);
 	if (!fout.is_open()) {
 		std::cout << "not open" << std::endl;
@@ -133,15 +127,15 @@ void ChessEngine::Save(std::string fileName){
 	fout.close();
 }
 
-std::vector<sf::Sprite> ChessEngine::GetPiecesToDraw(){
-	std::vector<sf::Sprite> sprites;
-	for (auto iter : *white.GetPieces()) {
-		sprites.push_back(iter->body);
+void ChessEngine::DeletePiece(Piece* p){
+	int i = 0;
+	for (auto iter : boardVis) {
+		if (iter->isSamePiece(p)) {
+			boardVis.erase(boardVis.begin() + i);
+			break;
+		}
+		++i;
 	}
-	for (auto iter : *black.GetPieces()) {
-		sprites.push_back(iter->body);
-	}
-	return sprites;
 }
 
 Player* ChessEngine::GetWhite(){
@@ -153,22 +147,14 @@ Player* ChessEngine::GetBlack(){
 }
 
 void ChessEngine::LmbInput(sf::Vector2i clickPos, Player* player){
-	//std::cout << clickPos.x << ' ' << clickPos.y << std::endl;
 	int x = clickPos.x / FIELD_SIZE;
 	int y = clickPos.y / FIELD_SIZE;
-	//std::cout << x << ' ' << y << std::endl;
 
 	if (activePiece == nullptr) {
 		if (board[x][y] != nullptr) {
 			if (board[x][y]->white == player->isWhite()) {
 				activePiece = board[x][y];
-				//activePiece->GenerateMoves(board, *GetAttackFields(player->isWhite()), 0);
-				//std::cout << board[x][y]->GetSymbol() << std::endl;
 				actPieceLight.setPosition(sf::Vector2f(x * FIELD_SIZE, y * FIELD_SIZE));
-				//std::cout << actPieceLight.getPosition().x << ' ' << actPieceLight.getPosition().y << std::endl;
-				for (auto iter : activePiece->avaliableAttacks) {
-					std::cout << iter.x << ' ' << iter.y << std::endl;
-				}
 			}
 		}
 	}
@@ -176,20 +162,11 @@ void ChessEngine::LmbInput(sf::Vector2i clickPos, Player* player){
 		if (activePiece->CanMoveHere(sf::Vector2i(x, y))||activePiece->CanAttackHere(sf::Vector2i(x, y))) {
 			board[activePiece->pos.x][activePiece->pos.y] = nullptr;
 			if (board[x][y] != nullptr) {
-				if (player->isWhite()) {
-					black.DeletePiece(board[x][y]);
-				}
-				else {
-					white.DeletePiece(board[x][y]);
-				}
+				DeletePiece(board[x][y]);
 			}
 			board[x][y] = activePiece;
 			activePiece->Move(sf::Vector2i(x, y));
 			activePiece = nullptr;
-		//	if (board[x][y]->white == player->isWhite()) {
-		//		activePiece = board[x][y];
-		//	}
-			//whiteTurn = !whiteTurn;
 			RoundEnd();
 		}
 		else {

@@ -15,9 +15,8 @@ public:
 	std::vector<std::vector<Piece*>>* boardPtr;
 	std::vector<sf::Vector2i> avaliableMoves;
 	std::vector<sf::Vector2i> avaliableAttacks;
-	sf::Texture tex;
-	sf::Sprite body;
-	//sf::CircleShape body;
+	std::vector<sf::Vector2i> movesPattern;
+	
 
 	Piece(int x, int y, bool white, std::vector<std::vector<Piece*>>& board);
 	Piece(int x, int y, bool white, fType tp);
@@ -27,7 +26,6 @@ public:
 //public:
 	char GetSymbol();
 	sf::Vector2i GetPos();
-	void draw(sf::RenderWindow* w);
 	bool CanMoveHere(sf::Vector2i dest);
 	bool CanAttackHere(sf::Vector2i dest);
 	void Move(sf::Vector2i newPos);
@@ -48,8 +46,7 @@ static Piece* blackKing;
 
 class Pawn : public Piece {
 private:
-	//fType Piece::type = PAWN;
-	bool firstMove = true;
+	//bool firstMove = true;
 
 public:
 	void GenerateMoves(int depth) override;
@@ -58,8 +55,7 @@ public:
 
 class Bishop : public Piece {
 private:
-	//fType Piece::type = BSHP;
-
+	
 public:
 	void GenerateMoves(int depth) override;
 	Bishop(int x, int y, bool white, std::vector<std::vector<Piece*>>& board);
@@ -67,8 +63,7 @@ public:
 
 class Knight : public Piece {
 private:
-	//fType Piece::type = KNHT;
-
+	
 public:
 	void GenerateMoves(int depth) override;
 	Knight(int x, int y, bool white, std::vector<std::vector<Piece*>>& board);
@@ -76,8 +71,7 @@ public:
 
 class Rook : public Piece {
 private:
-	//fType Piece::type = ROOK;
-	bool firstMove = true;
+	//bool firstMove = true;
 
 public:
 	void GenerateMoves(int depth) override;
@@ -86,8 +80,7 @@ public:
 
 class Queen : public Piece {
 private:
-	//fType Piece::type = QUEN;
-
+	
 public:
 	void GenerateMoves(int depth) override;
 	Queen(int x, int y, bool white, std::vector<std::vector<Piece*>>& board);
@@ -95,8 +88,7 @@ public:
 
 class King : public Piece {
 private:
-	//fType Piece::type = KING;
-	bool firstMove = true;
+	//bool firstMove = true;
 
 public:
 	void GenerateMoves(int depth) override;

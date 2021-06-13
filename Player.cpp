@@ -40,10 +40,6 @@ const int Player::GetNumOfPieces() const{
 	return pieces.size();
 }
 
-void Player::draw(sf::RenderWindow* w){
-	for (auto iter : pieces) iter->draw(w);
-}
-
 bool Player::isWhite(){
 	return white;
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Piece.h"
+#include "PieceVis.h"
 
 class Player{
 private:
@@ -13,7 +13,6 @@ public:
 	void AddPiece(char type, int x, int y, std::vector<std::vector<Piece*>>& board);
 	const std::vector<Piece*>* GetPieces();
 	const int GetNumOfPieces() const;
-	void draw(sf::RenderWindow* w);
 	bool isWhite();
 	void DeletePiece(Piece* toDelete);
 };

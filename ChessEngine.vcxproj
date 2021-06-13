@@ -149,6 +149,7 @@
   <ItemGroup>
     <ClInclude Include="Engine.h" />
     <ClInclude Include="Piece.h" />
+    <ClInclude Include="PieceVis.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="Utilities.h" />
   </ItemGroup>
@@ -156,6 +157,7 @@
     <ClCompile Include="Engine.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Piece.cpp" />
+    <ClCompile Include="PieceVis.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Utilities.cpp" />
   </ItemGroup>

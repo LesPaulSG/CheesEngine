@@ -113,10 +113,6 @@ sf::Vector2i Piece::GetPos(){
 	return pos;
 }
 
-void Piece::draw(sf::RenderWindow* w){
-	w->draw(body);
-}
-
 bool Piece::CanMoveHere(sf::Vector2i dest){
 	for (auto iter : avaliableMoves) {
 		if (iter == dest) {
@@ -137,8 +133,6 @@ bool Piece::CanAttackHere(sf::Vector2i dest){
 
 void Piece::Move(sf::Vector2i newPos){
 	pos = newPos;
-	body.setPosition(pos.x * FIELD_SIZE, pos.y * FIELD_SIZE);
-	firstMove = false;
 	for (int i = 0; i < 8; ++i) {
 		for (int j = 0; j < 8; ++j) {
 			if (boardPtr->at(j).at(i) != nullptr) {
@@ -179,10 +173,6 @@ void Pawn::GenerateMoves(int depth) {
 Pawn::Pawn(int x, int y, bool white, std::vector<std::vector<Piece*>>& board) :
 	Piece(x, y, white, board) {
 	Piece::type = fType::PAWN;
-	int h = white ? WHITE_TEXTURE_HEIGHT : BLACK_TEXTURE_HEIGHT;
-	tex.loadFromFile("piecesTexture.png", sf::IntRect(1650, h, 260, 300));
-	body.setTexture(tex);
-	SpriteTransform(&body, pos.x, pos.y);
 }
 
 void Bishop::GenerateMoves(int depth){
@@ -196,10 +186,6 @@ void Bishop::GenerateMoves(int depth){
 Bishop::Bishop(int x, int y, bool white, std::vector<std::vector<Piece*>>& board) : 
 	Piece(x, y, white, board) {
 	Piece::type = fType::BSHP;
-	int h = white ? WHITE_TEXTURE_HEIGHT : BLACK_TEXTURE_HEIGHT;
-	tex.loadFromFile("piecesTexture.png", sf::IntRect(660, h, 280, 300));
-	body.setTexture(tex);
-	SpriteTransform(&body, pos.x, pos.y);
 }
 
 void Knight::GenerateMoves(int depth){
@@ -218,10 +204,6 @@ void Knight::GenerateMoves(int depth){
 Knight::Knight(int x, int y, bool white, std::vector<std::vector<Piece*>>& board) : 
 	Piece(x, y, white, board) {
 	Piece::type = fType::KNHT;
-	int h = white ? WHITE_TEXTURE_HEIGHT : BLACK_TEXTURE_HEIGHT;
-	tex.loadFromFile("piecesTexture.png", sf::IntRect(990, h, 280, 300));
-	body.setTexture(tex);
-	SpriteTransform(&body, pos.x, pos.y);
 }
 
 void Rook::GenerateMoves(int depth){
@@ -232,13 +214,9 @@ void Rook::GenerateMoves(int depth){
 	ContinuousMoving(0, -1);
 }
 
-Rook::Rook(int x, int y, bool white, std::vector<std::vector<Piece*>>& board) : 
+Rook::Rook(int x, int y, bool white, std::vector<std::vector<Piece*>>& board) :
 	Piece(x, y, white, board) {
 	Piece::type = fType::ROOK;
-	int h = white ? WHITE_TEXTURE_HEIGHT : BLACK_TEXTURE_HEIGHT;
-	tex.loadFromFile("piecesTexture.png", sf::IntRect(1320, h, 260, 300));
-	body.setTexture(tex);
-	SpriteTransform(&body, pos.x, pos.y);
 }
 
 void Queen::GenerateMoves(int depth){
@@ -256,10 +234,6 @@ void Queen::GenerateMoves(int depth){
 Queen::Queen(int x, int y, bool white, std::vector<std::vector<Piece*>>& board) : 
 	Piece(x, y, white, board) {
 	Piece::type = fType::QUEN;
-	int h = white ? WHITE_TEXTURE_HEIGHT : BLACK_TEXTURE_HEIGHT;
-	tex.loadFromFile("piecesTexture.png", sf::IntRect(325, h, 300, 300));
-	body.setTexture(tex);
-	SpriteTransform(&body, pos.x, pos.y);
 }
 
 void King::GenerateMoves(int depth){
@@ -277,10 +251,6 @@ void King::GenerateMoves(int depth){
 King::King(int x, int y, bool white, std::vector<std::vector<Piece*>>& board) : 
 	Piece(x, y, white, board) {
 	Piece::type = fType::KING;
-	int h = white ? WHITE_TEXTURE_HEIGHT : BLACK_TEXTURE_HEIGHT;
-	tex.loadFromFile("piecesTexture.png", sf::IntRect(0, h, 260, 300));
-	body.setTexture(tex);
-	SpriteTransform(&body, pos.x, pos.y);
 	if (white) {
 		whiteKing = this;
 	}
